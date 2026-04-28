@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "647481199331",
+    "project_id": "asmitawellnessclinic",
+    "storage_bucket": "asmitawellnessclinic.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:647481199331:android:45b874f0ea366b6dc393d6",
+        "android_client_info": {
+          "package_name": "com.example.diet_cure"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCoXT1G7y-_hl3efsWzcpm6U46VOQTMMDY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
