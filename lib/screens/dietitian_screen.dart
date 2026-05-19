@@ -1,6 +1,8 @@
+import 'package:diet_cure/core/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:diet_cure/utils/app_styles.dart';
+import 'package:provider/provider.dart';
 
 class DietitianScreen extends StatefulWidget {
   const DietitianScreen({super.key});
@@ -184,8 +186,22 @@ class _DietitianScreenState extends State<DietitianScreen> {
           child: Icon(Icons.person, color: AppTheme.darkAzure, size: 20),
         ),
       ),
-      onSelected: (value) {
-        // Handle navigation actions here
+      onSelected: (value) async{
+        switch (value){
+          case 'profile':
+          break;
+
+          case 'clients_list':
+          break;
+
+          case 'diets_list':
+          break;
+
+          case 'sign_out':
+            final authProvider = Provider.of<AuthProvider>(context, listen: false);
+            await authProvider.signOut();
+            break;
+        }
       },
       itemBuilder: (context) => [
         _buildMenuItem('profile', 'Profile', Icons.account_circle_outlined),
