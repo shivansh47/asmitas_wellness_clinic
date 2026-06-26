@@ -66,10 +66,11 @@ class AuthProvider extends ChangeNotifier{
     notifyListeners();
 
     try{
+      print('registering with email in authservice');
       await _authService.registerWithEmail(
-        email: email, 
-        password: password, 
-        displayName: displayName, 
+        email: email,
+        password: password,
+        displayName: displayName,
         role: role
       );
     } catch (e) {
@@ -85,12 +86,26 @@ class AuthProvider extends ChangeNotifier{
     notifyListeners();
 
     try{
-      await _authService.signInWithEmail(email, password);
+      print('signing in with email in the authprovider');
+      final credential = await _authService.signInWithEmail(email, password);
+
+      // Manually fetch and set user instead of waiting for stream
+      if (credential.user != null) {
+        final appUser = await _userService.fetchByUid(credential.user!.uid);
+        if (appUser == null) {
+          await _authService.signOut();
+          _status = AuthStatus.unauthenticated;
+          _errorMessage = 'No Account found.';
+        } else {
+          _currentUser = appUser;
+          _status = AuthStatus.authenticated;
+        }
+      }
     } catch (e) {
       _status = AuthStatus.unauthenticated;
       _errorMessage = 'Login failed. Check email and password.';
-      notifyListeners();
     }
+    notifyListeners();
   }
 
   Future<void> signOut() async {

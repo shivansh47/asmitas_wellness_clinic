@@ -334,7 +334,7 @@ class _AuthFormState extends State<_AuthForm> {
 
     try {
       if (widget.isLogin) {
-        // Sign in with email
+        print('loging in using email');
         await provider.signInWithEmail(
           _emailController.text,
           _passwordController.text,

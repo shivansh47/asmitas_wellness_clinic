@@ -8,13 +8,14 @@ class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   //Having problem with the "Stream" method so trying Future method
-  Stream<User?> get authStateChanges => _auth.idTokenChanges();
+  Stream<User?> get authStateChanges => _auth.userChanges();
 
   Future<User?> getCurrentAuthUser() async {
     return _auth.currentUser;
   }
 
   Future<UserCredential> signInWithEmail(String email, String password) async {
+    print('sign in with email in the authservice');
     return await _auth.signInWithEmailAndPassword(
       email: email,
       password: password,
@@ -27,14 +28,17 @@ class AuthService {
     required String displayName,
     required UserRole role,
   }) async {
+    print('creating user with email and password');
     final credential = await _auth.createUserWithEmailAndPassword(
       email: email,
       password: password,
     );
 
+    print('updating username');
     await credential.user!.updateDisplayName(displayName);
+    print('saving user to firestore');
     await saveUserToFirestore(credential.user!, role, displayName);
-
+    print('returning credentials');
     return credential;
   }
 

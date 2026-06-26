@@ -1,4 +1,6 @@
+import 'package:diet_cure/core/models/app_user.dart';
 import 'package:diet_cure/core/providers/auth_provider.dart';
+import 'package:diet_cure/core/services/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:diet_cure/utils/app_styles.dart';
@@ -16,70 +18,40 @@ class _DietitianScreenState extends State<DietitianScreen> {
   String _selectedFilter = 'All Clients';
   final int _currentPage = 1;
   final int _totalClients = 124;
+  final UserService _userService = UserService();
+  List<AppUser> _allClients = [];
+  bool _isLoading = true;
 
-  // Placeholder data
-  final List<Map<String, dynamic>> _allClients = [
-    {
-      'id': '#SH-4921',
-      'initials': 'EM',
-      'name': 'Eleanor Martins',
-      'dietCode': 'KETO-ADVANCED',
-      'dietColor': AppTheme.dustyRose,
-      'lastAppt': 'Oct 12, 2023',
-    },
-    {
-      'id': '#SH-8820',
-      'initials': 'JR',
-      'name': 'Julian Rivers',
-      'dietCode': 'MED-HEART',
-      'dietColor': const Color(0xFF00B0A0), // AppTheme.primary
-      'lastAppt': 'Oct 10, 2023',
-    },
-    {
-      'id': '#SH-3102',
-      'initials': 'AA',
-      'name': 'Amara Adebayo',
-      'dietCode': 'PLANT-V1',
-      'dietColor': const Color(0xFF014750).withValues(alpha: 0.3), // Faded darkAzure
-      'lastAppt': 'Oct 09, 2023',
-    },
-    {
-      'id': '#SH-9941',
-      'initials': 'BC',
-      'name': 'Benjamin Chen',
-      'dietCode': 'LOW-FODMAP',
-      'dietColor': AppTheme.surfaceContainerLowest,
-      'lastAppt': 'Oct 05, 2023',
-    },
-    {
-      'id': '#SH-2204',
-      'initials': 'SK',
-      'name': 'Sarah Kowalski',
-      'dietCode': 'DASH-PLUS',
-      'dietColor': AppTheme.dustyRose,
-      'lastAppt': 'Sep 28, 2023',
-    },
-    {
-      'id': '#SH-5512',
-      'initials': 'DG',
-      'name': 'David Grier',
-      'dietCode': 'WEIGHT-LOSS-M',
-      'dietColor': const Color(0xFF00B0A0), // AppTheme.primary
-      'lastAppt': 'Sep 25, 2023',
-    }
-  ];
+  @override
+  void initState(){
+    super.initState();
+    _loadClients();
+  }
 
-  List<Map<String, dynamic>> get _filteredClients {
+  Future<void> _loadClients() async {
+    final clients = await _userService.fetchAllClients();
+    setState(() {
+      _allClients = clients;
+      _isLoading = false;
+    });
+  }
+
+  List<AppUser> get _filteredClients {
     return _allClients.where((client) {
-      final nameMatches = client['name'].toString().toLowerCase().contains(_searchQuery.toLowerCase());
-      final idMatches = client['id'].toString().toLowerCase().contains(_searchQuery.toLowerCase());
-      final dietMatches = client['dietCode'].toString().toLowerCase().contains(_searchQuery.toLowerCase());
-      return nameMatches || idMatches || dietMatches;
+      final nameMatches = client.displayName.toString().toLowerCase().contains(_searchQuery.toLowerCase());
+      final idMatches = client.uid.toString().toLowerCase().contains(_searchQuery.toLowerCase());
+      return nameMatches || idMatches;
     }).toList();
   }
 
   @override
   Widget build(BuildContext context) {
+    if(_isLoading){
+      print('the widget is loading.');
+      return const Center(child: Text('Fetching data from the Firestore'));
+    }
+
+    print('going into the actual widget');
     return Scaffold(
       backgroundColor: AppTheme.warmSand,
       appBar: _buildAppBar(),
@@ -481,8 +453,8 @@ class _DietitianScreenState extends State<DietitianScreen> {
       ),
     );
   }
-
-  Widget _buildClientRow(Map<String, dynamic> client, bool isEven) {
+ 
+  Widget _buildClientRow(AppUser client, bool isEven) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       color: isEven ? Colors.white : AppTheme.warmSand.withValues(alpha: 0.3),
@@ -492,7 +464,7 @@ class _DietitianScreenState extends State<DietitianScreen> {
           Expanded(
             flex: 2,
             child: Text(
-              client['id'],
+              client.uid,
               style: GoogleFonts.robotoMono(
                 fontSize: 14,
                 color: AppTheme.darkAzure.withValues(alpha: 0.6),
@@ -508,18 +480,15 @@ class _DietitianScreenState extends State<DietitianScreen> {
                 CircleAvatar(
                   radius: 14,
                   backgroundColor: AppTheme.surfaceContainerLowest,
-                  child: Text(
-                    client['initials'],
-                    style: GoogleFonts.quicksand(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.darkAzure,
-                    ),
+                  child: const Icon(
+                    Icons.person,
+                    size: 16,
+                    color: AppTheme.darkAzure,
                   ),
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  client['name'],
+                  client.displayName,
                   style: GoogleFonts.roboto(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -538,15 +507,15 @@ class _DietitianScreenState extends State<DietitianScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: (client['dietColor'] as Color).withValues(alpha: 0.15),
+                  color: AppTheme.darkAzure.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
-                  client['dietCode'],
+                  client.role.name,
                   style: GoogleFonts.roboto(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
-                    color: client['dietColor'] as Color,
+                    color: AppTheme.primary,
                   ),
                 ),
               ),
@@ -557,7 +526,7 @@ class _DietitianScreenState extends State<DietitianScreen> {
           Expanded(
             flex: 3,
             child: Text(
-              client['lastAppt'],
+              client.email ?? 'N/A',
               style: GoogleFonts.roboto(
                 fontSize: 14,
                 color: AppTheme.darkAzure.withValues(alpha: 0.8),

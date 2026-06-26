@@ -1,10 +1,9 @@
 import 'package:diet_cure/core/models/app_user.dart';
-import 'package:diet_cure/core/providers/auth_provider.dart' as auth;
+import 'package:diet_cure/core/providers/auth_provider.dart';
 import 'package:diet_cure/screens/admin_screen.dart';
 import 'package:diet_cure/screens/client_screen.dart';
 import 'package:diet_cure/screens/dietitian_screen.dart';
 import 'package:diet_cure/screens/login_screen.dart';
-import 'package:diet_cure/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -13,13 +12,13 @@ class AuthWrapper extends StatelessWidget{
 
     @override
     Widget build(BuildContext context){
-        return Consumer<auth.AuthProvider>(
+        return Consumer<AuthProvider>(
             builder: (context, authProvider, _){
-                if(authProvider.status == auth.AuthStatus.initial){
-                  return const SplashScreen();
+                if(authProvider.status == AuthStatus.initial){
+                  return const LoginScreen();
                 }
 
-                if(authProvider.status == auth.AuthStatus.unauthenticated){
+                if(authProvider.status == AuthStatus.unauthenticated){
                   return const LoginScreen();
                 }
 
