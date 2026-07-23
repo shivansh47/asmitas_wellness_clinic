@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:diet_cure/core/providers/auth_provider.dart' as auth;
@@ -295,6 +296,7 @@ class _AuthFormState extends State<_AuthForm> {
 
   Future<void> _submitEmail() async {
     final provider = context.read<auth.AuthProvider>();
+    final logger = Logger();
 
     // Validate inputs
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
@@ -333,13 +335,13 @@ class _AuthFormState extends State<_AuthForm> {
 
     try {
       if (widget.isLogin) {
-        print('loging in using email');
+        logger.d('loging in using email');
         await provider.signInWithEmail(
           _emailController.text,
           _passwordController.text,
         );
       } else {
-        print('registering with email');
+        logger.d('registering with email');
         await provider.registerWithEmail(
           email: _emailController.text,
           password: _passwordController.text,
