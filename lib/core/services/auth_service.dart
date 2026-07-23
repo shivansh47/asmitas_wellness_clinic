@@ -7,7 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  //Having problem with the "Stream" method so trying Future method
+  //Having problem with the "Stream" method so trying Future method                                                                                                                                                                                                                                                                  
   Stream<User?> get authStateChanges => _auth.userChanges();
 
   Future<User?> getCurrentAuthUser() async {
@@ -15,31 +15,25 @@ class AuthService {
   }
 
   Future<UserCredential> signInWithEmail(String email, String password) async {
-    print('sign in with email in the authservice');
     return await _auth.signInWithEmailAndPassword(
       email: email,
-      password: password,
+      password: password, 
     );
   }
 
-  Future<UserCredential> registerWithEmail({
+  Future<User?> registerWithEmail({
     required String email,
     required String password,
     required String displayName,
-    required UserRole role,
   }) async {
-    print('creating user with email and password');
     final credential = await _auth.createUserWithEmailAndPassword(
-      email: email,
-      password: password,
+      email: email, 
+      password: password
     );
 
-    print('updating username');
-    await credential.user!.updateDisplayName(displayName);
-    print('saving user to firestore');
-    await saveUserToFirestore(credential.user!, role, displayName);
-    print('returning credentials');
-    return credential;
+    final user = credential.user!;
+    await user.updateDisplayName(displayName);
+    return user;
   }
 
   Future<void> sendOtp({

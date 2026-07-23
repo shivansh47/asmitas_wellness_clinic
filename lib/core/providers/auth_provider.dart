@@ -6,6 +6,7 @@ import 'package:diet_cure/core/services/auth_service.dart';
 import 'package:diet_cure/core/services/user_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:logger/logger.dart';
 
 enum AuthStatus {initial, loading, authenticated, unauthenticated}
 
@@ -28,6 +29,8 @@ class AuthProvider extends ChangeNotifier{
   bool get isDietitian => _currentUser?.role == UserRole.dietitian;
   bool get isClient => _currentUser?.role == UserRole.client;
 
+  final _logger = Logger();
+
   AuthProvider() {
     _init();
   }
@@ -37,20 +40,22 @@ class AuthProvider extends ChangeNotifier{
       if(firebaseUser == null){
         _currentUser = null;
         _status = AuthStatus.unauthenticated;
-      } else {
-        final appUser = await _userService.fetchByUid(firebaseUser.uid);
-
-        if(appUser == null){
-          await _authService.signOut();
-          _currentUser = null;
-          _status = AuthStatus.unauthenticated;
-          _errorMessage = 'No Account found.';
+      } else if (firebaseUser.uid.isEmpty) {
+          return;
         } else {
-          _currentUser = appUser;
-          _status = AuthStatus.authenticated;
-          _errorMessage = null;
-        }
-      }
+            final appUser = await _userService.fetchByUid(firebaseUser.uid);
+
+            if(appUser == null){
+              await _authService.signOut();
+              _currentUser = null;
+              _status = AuthStatus.unauthenticated;
+              _errorMessage = 'No Account found.';
+            } else {
+              _currentUser = appUser;
+              _status = AuthStatus.authenticated;
+              _errorMessage = null;
+            }
+          }
       notifyListeners();
     });
   }
@@ -59,23 +64,46 @@ class AuthProvider extends ChangeNotifier{
     required String email,
     required String password,
     required String displayName,
-    required UserRole role
   }) async {
     _status = AuthStatus.loading;
     _errorMessage = null;
     notifyListeners();
 
     try{
-      print('registering with email in authservice');
+      _logger.d("Registering user with email in authprovider");
       await _authService.registerWithEmail(
         email: email,
         password: password,
         displayName: displayName,
-        role: role
       );
+
+      final firebaseUser = await _authService.getCurrentAuthUser();
+      if(firebaseUser == null){
+        throw StateError("Auth user is missing immediately after registration");
+      }
+
+      AppUser? appUser;
+      for(var i=0; i<20; i++){
+        await Future.delayed(const Duration(milliseconds: 500));
+        appUser = await _userService.fetchByUid(firebaseUser.uid);
+        if(appUser != null) break;
+      }
+
+      if(appUser == null){
+        throw StateError(
+          'Registration successful in auth, but the user profile was not created in time.'
+          'Check firebase functions: log --only onUserCreated'
+        );
+      }
+
+      _currentUser = appUser;
+      _status = AuthStatus.authenticated;
+      _errorMessage = null;
     } catch (e) {
       _status = AuthStatus.unauthenticated;
       _errorMessage = 'Registration failed. Try Again';
+      _logger.d('registerWithEmail failed: $e');
+    } finally {
       notifyListeners();
     }
   }
@@ -86,7 +114,7 @@ class AuthProvider extends ChangeNotifier{
     notifyListeners();
 
     try{
-      print('signing in with email in the authprovider');
+      _logger.d("signing in with email in the authprovider");
       final credential = await _authService.signInWithEmail(email, password);
 
       // Manually fetch and set user instead of waiting for stream

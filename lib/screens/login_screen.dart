@@ -247,7 +247,7 @@ class _TabButton extends StatelessWidget {
 // --- Form Component ---
 class _AuthForm extends StatefulWidget {
   final bool isLogin;
-  const _AuthForm({Key? key, required this.isLogin}) : super(key: key);
+  const _AuthForm({super.key, required this.isLogin});
 
   @override
   State<_AuthForm> createState() => _AuthFormState();
@@ -340,12 +340,11 @@ class _AuthFormState extends State<_AuthForm> {
           _passwordController.text,
         );
       } else {
-        // Register with email
+        print('registering with email');
         await provider.registerWithEmail(
           email: _emailController.text,
           password: _passwordController.text,
           displayName: _nameController.text,
-          role: UserRole.client,
         );
       }
     } catch (e) {
