@@ -31,7 +31,7 @@ function generateClientID(): Promise<string> {
 }
 
 export const onUserCreated = functions.auth.user().onCreate(async (user) => {
-  const {uid, email, displayName} = user;
+  const {uid, email} = user;
   console.log("onCreate: ${uid} (${email})");
 
   const clientID = await generateClientID();
@@ -40,7 +40,7 @@ export const onUserCreated = functions.auth.user().onCreate(async (user) => {
   const doc: RegisterUserData = {
     uid,
     email: email ?? "",
-    displayName: displayName ?? "",
+    displayName: "",
     role: "client",
     clientID,
     createdAt: admin.firestore.Timestamp.now(),

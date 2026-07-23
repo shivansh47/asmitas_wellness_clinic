@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:diet_cure/core/providers/auth_provider.dart' as auth;
-import 'package:diet_cure/core/models/app_user.dart';
 import 'package:diet_cure/utils/app_styles.dart';
 import 'dart:async';
 

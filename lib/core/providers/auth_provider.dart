@@ -1,6 +1,7 @@
 
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:diet_cure/core/models/app_user.dart';
 import 'package:diet_cure/core/services/auth_service.dart';
 import 'package:diet_cure/core/services/user_service.dart';
@@ -94,6 +95,14 @@ class AuthProvider extends ChangeNotifier{
           'Registration successful in auth, but the user profile was not created in time.'
           'Check firebase functions: log --only onUserCreated'
         );
+      }
+
+      if(displayName.isNotEmpty && appUser.displayName != displayName){
+        await FirebaseFirestore.instance
+          .collection("users")
+          .doc(firebaseUser.uid)
+          .update({'displayName': displayName});
+        appUser = await _userService.fetchByUid(firebaseUser.uid) ?? appUser;
       }
 
       _currentUser = appUser;
